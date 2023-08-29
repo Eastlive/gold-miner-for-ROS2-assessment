@@ -1,2 +1,1 @@
 find_package(ament_cmake_gtest REQUIRED)
-find_package(ament_index_cpp REQUIRED)

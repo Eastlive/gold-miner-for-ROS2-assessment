@@ -15,7 +15,8 @@ namespace mine_publisher
 class MinePublisherNode : public rclcpp::Node
 {
 public:
-  explicit MinePublisherNode(const rclcpp::NodeOptions& options);
+  explicit MinePublisherNode(const rclcpp::NodeOptions & options);
+  ~MinePublisherNode() {}
 
 private:
   void timer_callback();
