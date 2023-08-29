@@ -13,7 +13,7 @@ find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(miner_interfaces REQUIRED)
 
-set(add_dependencies
+set(dependencies
   rclcpp
   rclcpp_components
   std_msgs
@@ -43,6 +43,10 @@ install(DIRECTORY include/
   DESTINATION include
 )
 
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
 install(TARGETS ${PROJECT_NAME}
   EXPORT export_${PROJECT_NAME}
   LIBRARY DESTINATION lib
@@ -61,6 +65,7 @@ if(BUILD_TESTING)
   # a copyright and license is added to all source files
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
+  add_subdirectory(test)
 endif()
 
 ament_export_targets(export_${PROJECT_NAME})

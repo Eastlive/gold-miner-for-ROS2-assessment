@@ -16,13 +16,16 @@ namespace mine_service
 class MineServiceNode : public rclcpp::Node
 {
 public:
-  MineServiceNode();
+  explicit MineServiceNode(const rclcpp::NodeOptions & options);
   ~MineServiceNode() {}
+
+  miner_interfaces::msg::Ores get_ores_msg() {return ores_msg_;}
 
 private:
   void mine_callback(const miner_interfaces::msg::Ores ores);
-  void mine_service(const std::shared_ptr<miner_interfaces::srv::MineMap::Request> request,
-  const std::shared_ptr<miner_interfaces::srv::MineMap::Response> response);
+  void mine_service(
+    const std::shared_ptr<miner_interfaces::srv::MineMap::Request> request,
+    const std::shared_ptr<miner_interfaces::srv::MineMap::Response> response);
 
   rclcpp::Subscription<miner_interfaces::msg::Ores>::SharedPtr subscription_;
   rclcpp::Service<miner_interfaces::srv::MineMap>::SharedPtr service_;
