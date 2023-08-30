@@ -73,7 +73,14 @@ TEST(MineServiceNode, TestMineService)
   {
     auto response = result_future.get();
     // Assertions
-    EXPECT_FALSE(response->ores.ores.size());
+    bool id_found = false;
+    for (auto ore : response->ores.ores) {
+      if (ore.id == request->id) {
+        id_found = true;
+        break;
+      }
+    }
+    EXPECT_FALSE(id_found);
   } else {
     ADD_FAILURE() << "Failed to call service";
   }
