@@ -36,9 +36,8 @@ TEST(MineServiceNode, TestMineCallback)
 
   ores_pub->publish(ores_msg);
 
-  std::this_thread::sleep_for(500ms);  // Allow time for the message to be received
+  std::this_thread::sleep_for(500ms);
 
-  // Assertionsg
   EXPECT_EQ(test_node->get_ores_msg().ores[0].id, ore_msg.id);
   EXPECT_EQ(test_node->get_ores_msg().ores[0].type, ore_msg.type);
   EXPECT_EQ(test_node->get_ores_msg().ores[0].pose.position.x, ore_msg.pose.position.x);
@@ -60,7 +59,7 @@ TEST(MineServiceNode, TestMineService)
   auto client = test_node->create_client<miner_interfaces::srv::MineMap>("mine_map");
 
   auto spin_thread = std::thread([&]() {rclcpp::spin(test_node);});
-  std::this_thread::sleep_for(500ms);  // Allow time for the service to be ready
+  std::this_thread::sleep_for(500ms);
 
   auto request = std::make_shared<miner_interfaces::srv::MineMap::Request>();
   request->id = 1;
@@ -72,7 +71,6 @@ TEST(MineServiceNode, TestMineService)
       result_future) == rclcpp::FutureReturnCode::SUCCESS)
   {
     auto response = result_future.get();
-    // Assertions
     bool id_found = false;
     for (auto ore : response->ores.ores) {
       if (ore.id == request->id) {
