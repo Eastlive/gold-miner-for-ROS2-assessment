@@ -24,7 +24,7 @@ private:
   int32_t find_aim_ore(const miner_interfaces::msg::Ores ore_array);
   void send_request(const int32_t id);
   void result_callback(rclcpp::Client<miner_interfaces::srv::MineMap>::SharedFuture result_future);
-  
+
   rclcpp::Subscription<miner_interfaces::msg::Ores>::SharedPtr subscription_;
   rclcpp::Client<miner_interfaces::srv::MineMap>::SharedPtr client_;
 

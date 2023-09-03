@@ -14,21 +14,20 @@
 
 namespace miner_client
 {
-MinerClientNode::MinerClientNode(const rclcpp::NodeOptions& options) : Node("miner_client", options)
+MinerClientNode::MinerClientNode(const rclcpp::NodeOptions & options)
+: Node("miner_client", options)
 {
   RCLCPP_INFO(this->get_logger(), "Starting Miner Client Node");
   subscription_ = this->create_subscription<miner_interfaces::msg::Ores>(
-      "mines", 10, std::bind(&MinerClientNode::mine_callback, this, std::placeholders::_1));
+    "mines", 10, std::bind(&MinerClientNode::mine_callback, this, std::placeholders::_1));
 
   recent_ores_msg_ = origin_ores_msg_;
 
   client_ = this->create_client<miner_interfaces::srv::MineMap>("mine_map");
 
-  while (recent_ores_msg_.ores.size())
-  {
+  while (recent_ores_msg_.ores.size()) {
     auto id = find_aim_ore(recent_ores_msg_);
-    if (id == -1)
-    {
+    if (id == -1) {
       RCLCPP_ERROR(this->get_logger(), "No found closest ore.");
       break;
     }
@@ -36,8 +35,7 @@ MinerClientNode::MinerClientNode(const rclcpp::NodeOptions& options) : Node("min
     send_request(id);
   }
 
-  if(!recent_ores_msg_.ores.size())
-  {
+  if (!recent_ores_msg_.ores.size()) {
     RCLCPP_INFO(this->get_logger(), "Miner completed.");
   }
 }
@@ -53,16 +51,14 @@ int32_t MinerClientNode::find_aim_ore(const miner_interfaces::msg::Ores ore_arra
   double min_distance = std::numeric_limits<double>::max();
   int32_t closest_ore_id = -1;
 
-  for (const auto& ore : ore_array.ores)
-  {
+  for (const auto & ore : ore_array.ores) {
     double x = ore.pose.position.x;
     double y = ore.pose.position.y;
     double z = ore.pose.position.z;
 
     double distance = std::sqrt(x * x + y * y + z * z);
 
-    if (distance < min_distance)
-    {
+    if (distance < min_distance) {
       min_distance = distance;
       closest_ore_id = ore.id;
     }
@@ -73,10 +69,8 @@ int32_t MinerClientNode::find_aim_ore(const miner_interfaces::msg::Ores ore_arra
 
 void MinerClientNode::send_request(const int32_t id)
 {
-  while (!client_->wait_for_service(std::chrono::seconds(1)))
-  {
-    if (!rclcpp::ok())
-    {
+  while (!client_->wait_for_service(std::chrono::seconds(1))) {
+    if (!rclcpp::ok()) {
       RCLCPP_ERROR(this->get_logger(), "Interrupted while watting for the service. Exiting.");
       return;
     }
@@ -86,20 +80,21 @@ void MinerClientNode::send_request(const int32_t id)
   auto request = std::make_shared<miner_interfaces::srv::MineMap::Request>();
   request->id = id;
 
-  client_->async_send_request(request, std::bind(&MinerClientNode::result_callback, this, std::placeholders::_1));
+  client_->async_send_request(
+    request,
+    std::bind(&MinerClientNode::result_callback, this, std::placeholders::_1));
 }
 
-void MinerClientNode::result_callback(rclcpp::Client<miner_interfaces::srv::MineMap>::SharedFuture result_future)
+void MinerClientNode::result_callback(
+  rclcpp::Client<miner_interfaces::srv::MineMap>::SharedFuture result_future)
 {
-    auto result = result_future.get();
+  auto result = result_future.get();
 
-    if(result)
-    {
-        recent_ores_msg_ = result->ores;
-    }
-    else{
-        RCLCPP_ERROR(this->get_logger(), "Cannot recieve response.");
-    }
+  if (result) {
+    recent_ores_msg_ = result->ores;
+  } else {
+    RCLCPP_ERROR(this->get_logger(), "Cannot recieve response.");
+  }
 }
 }  // namespace miner_client
 

@@ -14,7 +14,6 @@ find_package(geometry_msgs REQUIRED)
 find_package(miner_interfaces REQUIRED)
 
 set(dependencies
-  ament_cmake
   rclcpp
   rclcpp_components
   std_msgs
@@ -30,9 +29,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE::include>
 )
-ament_target_dependencies{${PROJECT_NAME}
+
+ament_target_dependencies(${PROJECT_NAME}
   ${dependencies}
-}
+)
 
 rclcpp_components_register_node(${PROJECT_NAME}
   PLUGIN "miner_client::MinerClientNode"
