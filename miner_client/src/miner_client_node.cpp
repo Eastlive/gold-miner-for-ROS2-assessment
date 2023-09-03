@@ -21,29 +21,49 @@ MinerClientNode::MinerClientNode(const rclcpp::NodeOptions & options)
   subscription_ = this->create_subscription<miner_interfaces::msg::Ores>(
     "mines", 10, std::bind(&MinerClientNode::mine_callback, this, std::placeholders::_1));
 
-  recent_ores_msg_ = origin_ores_msg_;
+  timer_ =
+    this->create_wall_timer(
+    std::chrono::milliseconds(500),
+    std::bind(&MinerClientNode::check_and_proceed, this));
+}
 
-  client_ = this->create_client<miner_interfaces::srv::MineMap>("mine_map");
+void MinerClientNode::check_and_proceed()
+{
+  RCLCPP_INFO(this->get_logger(), "Check the message.");
+  if (received_message_) {
+    timer_->cancel();
 
-  while (recent_ores_msg_.ores.size()) {
-    auto id = find_aim_ore(recent_ores_msg_);
-    if (id == -1) {
-      RCLCPP_ERROR(this->get_logger(), "No found closest ore.");
-      break;
+    RCLCPP_INFO(this->get_logger(), "Proceed.");
+    recent_ores_msg_ = origin_ores_msg_;
+
+    if (!recent_ores_msg_.ores.size()) {
+      RCLCPP_ERROR(this->get_logger(), "Did not find any ore.");
     }
-    RCLCPP_INFO(this->get_logger(), "Excavate No.%d ore.", id);
-    send_request(id);
-  }
 
-  if (!recent_ores_msg_.ores.size()) {
-    RCLCPP_INFO(this->get_logger(), "Miner completed.");
+    RCLCPP_INFO(this->get_logger(), "Start Client.");
+    client_ = this->create_client<miner_interfaces::srv::MineMap>("mine_map");
+
+    while (recent_ores_msg_.ores.size()) {
+      auto id = find_aim_ore(recent_ores_msg_);
+      if (id == -1) {
+        RCLCPP_ERROR(this->get_logger(), "No found closest ore.");
+        break;
+      }
+      RCLCPP_INFO(this->get_logger(), "Excavate No.%d ore.", id);
+      send_request(id);
+    }
+
+    if (!recent_ores_msg_.ores.size()) {
+      RCLCPP_INFO(this->get_logger(), "Miner completed.");
+    }
   }
 }
 
 void MinerClientNode::mine_callback(const miner_interfaces::msg::Ores ores)
 {
-  RCLCPP_INFO(this->get_logger(), "Received ores.");
   origin_ores_msg_ = ores;
+  received_message_ = true;
+  RCLCPP_INFO(this->get_logger(), "Received %zu ores.", origin_ores_msg_.ores.size());
 }
 
 int32_t MinerClientNode::find_aim_ore(const miner_interfaces::msg::Ores ore_array)
@@ -69,6 +89,7 @@ int32_t MinerClientNode::find_aim_ore(const miner_interfaces::msg::Ores ore_arra
 
 void MinerClientNode::send_request(const int32_t id)
 {
+  RCLCPP_INFO(this->get_logger(), "Digging No.%d ore.", id);
   while (!client_->wait_for_service(std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       RCLCPP_ERROR(this->get_logger(), "Interrupted while watting for the service. Exiting.");
