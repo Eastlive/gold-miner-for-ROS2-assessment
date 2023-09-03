@@ -8,8 +8,53 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_components REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(miner_interfaces REQUIRED)
+
+set(dependencies
+  ament_cmake
+  rclcpp
+  rclcpp_components
+  std_msgs
+  geometry_msgs
+  miner_interfaces
+)
+
+# build libraries
+add_library(${PROJECT_NAME} SHARED
+  src/miner_client_node.cpp
+)
+target_include_directories(${PROJECT_NAME} PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE::include>
+)
+ament_target_dependencies{${PROJECT_NAME}
+  ${dependencies}
+}
+
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "miner_client::MinerClientNode"
+  EXECUTABLE ${PROJECT_NAME}_node
+)
+
+# install
+install(DIRECTORY include/
+  DESTINATION include
+)
+
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(TARGETS ${PROJECT_NAME}
+  EXPORT export_${PROJECT_NAME}
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -22,5 +67,8 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
+
+ament_export_targets(export_${PROJECT_NAME})
+ament_export_dependencies(${dependencies})
 
 ament_package()
