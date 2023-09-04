@@ -1,5 +1,5 @@
-// Copyright Chen Tingxu
-// License MIT
+// Copyright (c) 2023 Eastlive
+// MIT License
 
 #ifndef MINER_CLIENT__MINER_CLIENT_NODE_HPP_
 #define MINER_CLIENT__MINER_CLIENT_NODE_HPP_

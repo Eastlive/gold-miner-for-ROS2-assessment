@@ -1,5 +1,5 @@
-# Copyright 2023 Chen Tingxu
-# Distributed under terms of the MIT license.
+# Copyright (c) 2023 Eastlive
+# MIT License
 
 # Basic launch file
 from launch.launch_description import LaunchDescription

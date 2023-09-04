@@ -1,4 +1,4 @@
-// Copyright 2023 Chen Tingxu
+// Copyright (c) 2023 Eastlive
 // MIT License
 
 #include "mine_service/mine_service_node.hpp"

@@ -66,3 +66,6 @@ ros2 run miner_client miner_client_node
 └── src
     └── README.md
 ```
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details

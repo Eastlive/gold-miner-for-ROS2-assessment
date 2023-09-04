@@ -1,4 +1,4 @@
-// Copyright Chen Tingxu
+// Copyright (c) 2023 Eastlive
 // MIT License
 
 #include <string>
