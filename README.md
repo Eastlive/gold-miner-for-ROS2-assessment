@@ -29,42 +29,51 @@ ros2 run miner_client miner_client_node
 ## 项目结构
 ```
 .
+├── mine_publisher
+│   ├── CMakeLists.txt
+│   ├── config
+│   │   └── mine_publisher.yaml
+│   ├── include
+│   │   └── mine_publisher
+│   │       └── mine_publisher_node.hpp
+│   ├── launch
+│   │   └── mine_publisher.launch.py
+│   ├── package.xml
+│   ├── src
+│   │   └── mine_publisher_node.cpp
+│   └── test
+│       └── CMakeLists.txt
 ├── miner_client
 │   ├── CMakeLists.txt
 │   ├── include
 │   │   └── miner_client
+│   │       └── miner_client_node.hpp
+│   ├── launch
+│   │   └── miner_client.launch.py
 │   ├── package.xml
 │   └── src
-│       └── miner_client.cpp
+│       └── miner_client_node.cpp
 ├── miner_interfaces
-│   ├── action
-│   │   └── Miner.action
 │   ├── CMakeLists.txt
-│   ├── include
-│   │   └── miner_interfaces
 │   ├── msg
-│   │   ├── Mine.msg
-│   │   └── MineMap.msg
+│   │   ├── Ore.msg
+│   │   └── Ores.msg
 │   ├── package.xml
 │   └── srv
 │       └── MineMap.srv
-├── mine_publisher
-│   ├── CMakeLists.txt
-│   ├── include
-│   │   └── mine_publisher
-│   ├── package.xml
-│   └── src
-│       └── mine_publisher.cpp
 ├── mine_service
 │   ├── CMakeLists.txt
 │   ├── include
 │   │   └── mine_service
+│   │       └── mine_service_node.hpp
+│   ├── launch
 │   ├── package.xml
-│   └── src
-│       └── mine_service.cpp
-├── README.md
-└── src
-    └── README.md
+│   ├── src
+│   │   └── mine_service_node.cpp
+│   └── test
+│       ├── CMakeLists.txt
+│       └── test_mine_service.cpp
+└── README.md
 ```
 ## License
 
