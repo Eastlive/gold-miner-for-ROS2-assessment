@@ -25,6 +25,8 @@ MinerClientNode::MinerClientNode(const rclcpp::NodeOptions & options)
     this->create_wall_timer(
     std::chrono::milliseconds(500),
     std::bind(&MinerClientNode::check_and_proceed, this));
+
+  client_ = this->create_client<miner_interfaces::srv::MineMap>("mine_map");
 }
 
 void MinerClientNode::check_and_proceed()
@@ -32,6 +34,7 @@ void MinerClientNode::check_and_proceed()
   RCLCPP_INFO(this->get_logger(), "Check the message.");
   if (received_message_) {
     timer_->cancel();
+    subscription_ = nullptr;
 
     RCLCPP_INFO(this->get_logger(), "Proceed.");
     recent_ores_msg_ = origin_ores_msg_;
@@ -39,9 +42,6 @@ void MinerClientNode::check_and_proceed()
     if (!recent_ores_msg_.ores.size()) {
       RCLCPP_ERROR(this->get_logger(), "Did not find any ore.");
     }
-
-    RCLCPP_INFO(this->get_logger(), "Start Client.");
-    client_ = this->create_client<miner_interfaces::srv::MineMap>("mine_map");
 
     while (recent_ores_msg_.ores.size()) {
 
@@ -58,7 +58,7 @@ void MinerClientNode::check_and_proceed()
         RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
         return;
       }
-      send_request(id);
+      // send_request(id);
     }
 
     if (!recent_ores_msg_.ores.size()) {
@@ -111,25 +111,30 @@ void MinerClientNode::send_request(const int32_t id)
   request->id = id;
   RCLCPP_INFO(this->get_logger(), "Send request id.");
 
-  auto result_future = client_->async_send_request(request); // 不再使用bind
+  client_->async_send_request(
+    request, std::bind(&MinerClientNode::result_callback, this, std::placeholders::_1));
+  
+  RCLCPP_INFO(this->get_logger(), "Waiting for response.");
+}
 
-  // 等待结果或者超时
-  if (result_future.wait_for(std::chrono::seconds(5)) == std::future_status::ready) {
-    RCLCPP_INFO(this->get_logger(), "Start result callback.");
+void MinerClientNode::result_callback(
+  rclcpp::Client<miner_interfaces::srv::MineMap>::SharedFuture result_future)
+{
+  RCLCPP_INFO(this->get_logger(), "Start result callback.");
+  auto status = result_future.wait_for(std::chrono::seconds(1));
+  if (status == std::future_status::ready) {
     auto result = result_future.get();
-
     if (result) {
       recent_ores_msg_ = result->ores;
       RCLCPP_INFO(this->get_logger(), "%zu ore(s) left.", recent_ores_msg_.ores.size());
     } else {
       RCLCPP_ERROR(this->get_logger(), "Cannot recieve response.");
     }
-    
-    RCLCPP_INFO(this->get_logger(), "Finish result callback.");
-
   } else {
-    RCLCPP_WARN(this->get_logger(), "Service call timed out");
+    RCLCPP_ERROR(this->get_logger(), "Failed to get response.");
   }
+
+  RCLCPP_INFO(this->get_logger(), "Finish result callback.");
 }
 
 }  // namespace miner_client
