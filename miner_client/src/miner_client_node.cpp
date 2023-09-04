@@ -26,44 +26,39 @@ MinerClientNode::MinerClientNode(const rclcpp::NodeOptions & options)
     }
     RCLCPP_INFO(this->get_logger(), "service not available, waiting again...");
   }
-  
+
   RCLCPP_INFO(this->get_logger(), "Start mining.");
   send_request(-1);
-  while(!received_callback) {
+  while (!received_callback) {
     rclcpp::spin_some(this->get_node_base_interface());
   }
-  RCLCPP_INFO(this->get_logger(), "Initializer know recent_ores_msg_.ores.size() = %zu", recent_ores_msg_.ores.size());
-  
-  while(recent_ores_msg_.ores.size() > 0) {
+  RCLCPP_INFO(
+    this->get_logger(), "Initializer know recent_ores_msg_.ores.size() = %zu",
+    recent_ores_msg_.ores.size());
+
+  while (recent_ores_msg_.ores.size() > 0) {
     int32_t aim_ore_id = find_aim_ore(recent_ores_msg_);
     RCLCPP_INFO(this->get_logger(), "Aim ore No.%d.", aim_ore_id);
     send_request(aim_ore_id);
-    while(!received_callback) {
+    while (!received_callback) {
       rclcpp::spin_some(this->get_node_base_interface());
     }
-    RCLCPP_INFO(this->get_logger(), "recent_ores_msg_.ores.size() = %zu", recent_ores_msg_.ores.size());
+    RCLCPP_INFO(
+      this->get_logger(), "recent_ores_msg_.ores.size() = %zu",
+      recent_ores_msg_.ores.size());
 
     rclcpp::sleep_for(std::chrono::seconds(1));
   }
-  
-  if(recent_ores_msg_.ores.size() == 0) {
+
+  if (recent_ores_msg_.ores.size() == 0) {
     RCLCPP_INFO(this->get_logger(), "Miner finished mining and no ore left!");
   }
-  // for(int i = 0; i < 10; i++) {
-  //   RCLCPP_INFO(this->get_logger(), "Start mining in %d seconds.", i);
-  //   send_request(i);
-  //   // rclcpp::sleep_for(std::chrono::seconds(1));
-  //   while(!received_callback) {
-  //     rclcpp::spin_some(this->get_node_base_interface());
-  //   }
-  //   RCLCPP_INFO(this->get_logger(), "recent_ores_msg_.ores.size() = %zu", recent_ores_msg_.ores.size());
-  // }
 }
 
 void MinerClientNode::send_request(const int32_t id)
 {
   received_callback = false;
-  if(id == -1) {
+  if (id == -1) {
     RCLCPP_INFO(this->get_logger(), "[send_request] Initial mine map.");
   } else {
     RCLCPP_INFO(this->get_logger(), "[send_request] Digging No.%d ore.", id);
@@ -74,7 +69,7 @@ void MinerClientNode::send_request(const int32_t id)
   RCLCPP_INFO(this->get_logger(), "[send_request] Send request id.");
   client_->async_send_request(
     request, std::bind(&MinerClientNode::result_callback, this, std::placeholders::_1));
-  
+
   RCLCPP_INFO(this->get_logger(), "[send_request] Waiting for response.");
 }
 
@@ -87,7 +82,8 @@ void MinerClientNode::result_callback(
     auto result = result_future.get();
     if (result) {
       recent_ores_msg_ = result->ores;
-      RCLCPP_INFO(this->get_logger(), "[result_callback] %zu ore(s) left.", recent_ores_msg_.ores.size());
+      RCLCPP_INFO(
+        this->get_logger(), "[result_callback] %zu ore(s) left.", recent_ores_msg_.ores.size());
     } else {
       RCLCPP_ERROR(this->get_logger(), "[result_callback] Cannot recieve response.");
     }
