@@ -29,28 +29,38 @@ void MineServiceNode::mine_callback(const miner_interfaces::msg::Ores ores)
 {
   ores_msg_ = ores;
   RCLCPP_INFO(this->get_logger(), "Received %zu ores", ores_msg_.ores.size());
+  subscription_ = nullptr;
 }
 
 void MineServiceNode::mine_service(
   const std::shared_ptr<miner_interfaces::srv::MineMap::Request> request,
-  const std::shared_ptr<miner_interfaces::srv::MineMap::Response> respense)
+  const std::shared_ptr<miner_interfaces::srv::MineMap::Response> response)
 {
   if (ores_msg_.ores.size() == 0) {
     RCLCPP_INFO(this->get_logger(), "No ores");
+    response->ores = ores_msg_;
     return;
   }
   RCLCPP_INFO(this->get_logger(), "Received mine_map request from %d.", request->id);
 
+  bool found = false;
   for (auto it = ores_msg_.ores.begin(); it != ores_msg_.ores.end(); it++) {
     RCLCPP_INFO(this->get_logger(), "Search for ore No.%d.", it->id);
-  
+
     if (it->id == request->id) {
+      found = true;
       RCLCPP_INFO(this->get_logger(), "Response mine_map request to %d.", request->id);
       ores_msg_.ores.erase(it);
       RCLCPP_INFO(this->get_logger(), "Current reminding ore number: %zu.", ores_msg_.ores.size());
-      respense->ores = ores_msg_;
-      return;
+      response->ores = ores_msg_;
+      break;
     }
+  }
+
+  if (!found) {
+    RCLCPP_ERROR(this->get_logger(), "No found ore No.%d.", request->id);
+  } else {
+    RCLCPP_INFO(this->get_logger(), "Found ore No.%d.", request->id);
   }
 }
 } // namespace mine_service

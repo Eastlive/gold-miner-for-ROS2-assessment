@@ -53,11 +53,10 @@ void MinerClientNode::check_and_proceed()
         break;
       }
       RCLCPP_INFO(this->get_logger(), "Excavate No.%d ore.", id);
-      
-      if(client_interruption_)
-      {
-         RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
-         return;
+
+      if (client_interruption_) {
+        RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
+        return;
       }
       send_request(id);
     }
@@ -112,31 +111,27 @@ void MinerClientNode::send_request(const int32_t id)
   request->id = id;
   RCLCPP_INFO(this->get_logger(), "Send request id.");
 
-  auto future_result = client_->async_send_request(request); // 不再使用bind
-  auto shared_future_result = future_result.future.share();  // 转换为 shared_future
+  auto result_future = client_->async_send_request(request); // 不再使用bind
 
   // 等待结果或者超时
-  if (shared_future_result.wait_for(std::chrono::seconds(5)) == std::future_status::ready) {
-    result_callback(shared_future_result);  // 手动调用回调函数
+  if (result_future.wait_for(std::chrono::seconds(5)) == std::future_status::ready) {
+    RCLCPP_INFO(this->get_logger(), "Start result callback.");
+    auto result = result_future.get();
+
+    if (result) {
+      recent_ores_msg_ = result->ores;
+      RCLCPP_INFO(this->get_logger(), "%zu ore(s) left.", recent_ores_msg_.ores.size());
+    } else {
+      RCLCPP_ERROR(this->get_logger(), "Cannot recieve response.");
+    }
+    
+    RCLCPP_INFO(this->get_logger(), "Finish result callback.");
+
   } else {
     RCLCPP_WARN(this->get_logger(), "Service call timed out");
   }
-  RCLCPP_INFO(this->get_logger(), "Finish result callback.");
 }
 
-void MinerClientNode::result_callback(
-  rclcpp::Client<miner_interfaces::srv::MineMap>::SharedFuture result_future)
-{
-  RCLCPP_INFO(this->get_logger(), "Start result callback.");
-  auto result = result_future.get();
-
-  if (result) {
-    recent_ores_msg_ = result->ores;
-    RCLCPP_INFO(this->get_logger(), "%zu ore(s) left.", recent_ores_msg_.ores.size());
-  } else {
-    RCLCPP_ERROR(this->get_logger(), "Cannot recieve response.");
-  }
-}
 }  // namespace miner_client
 
 #include "rclcpp_components/register_node_macro.hpp"
