@@ -27,8 +27,8 @@ MineServiceNode::MineServiceNode(const rclcpp::NodeOptions & options)
 
 void MineServiceNode::mine_callback(const miner_interfaces::msg::Ores ores)
 {
-  RCLCPP_INFO(this->get_logger(), "Received ores");
   ores_msg_ = ores;
+  RCLCPP_INFO(this->get_logger(), "Received %zu ores", ores_msg_.ores.size());
 }
 
 void MineServiceNode::mine_service(
@@ -39,11 +39,15 @@ void MineServiceNode::mine_service(
     RCLCPP_INFO(this->get_logger(), "No ores");
     return;
   }
-  RCLCPP_INFO(this->get_logger(), "Received mine_map request from %d", request->id);
+  RCLCPP_INFO(this->get_logger(), "Received mine_map request from %d.", request->id);
+
   for (auto it = ores_msg_.ores.begin(); it != ores_msg_.ores.end(); it++) {
+    RCLCPP_INFO(this->get_logger(), "Search for ore No.%d.", it->id);
+  
     if (it->id == request->id) {
-      RCLCPP_INFO(this->get_logger(), "Response mine_map request to %d", request->id);
+      RCLCPP_INFO(this->get_logger(), "Response mine_map request to %d.", request->id);
       ores_msg_.ores.erase(it);
+      RCLCPP_INFO(this->get_logger(), "Current reminding ore number: %zu.", ores_msg_.ores.size());
       respense->ores = ores_msg_;
       return;
     }

@@ -29,6 +29,7 @@ private:
   rclcpp::Subscription<miner_interfaces::msg::Ores>::SharedPtr subscription_;
   rclcpp::Client<miner_interfaces::srv::MineMap>::SharedPtr client_;
 
+  bool client_interruption_ = false;
   bool received_message_ = false;
   rclcpp::TimerBase::SharedPtr timer_;
 
