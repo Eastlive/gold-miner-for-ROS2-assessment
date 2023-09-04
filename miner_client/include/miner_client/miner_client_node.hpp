@@ -31,6 +31,7 @@ private:
 
   bool client_interruption_ = false;
   bool received_message_ = false;
+  bool received_callback = false;
   rclcpp::TimerBase::SharedPtr timer_;
 
   miner_interfaces::msg::Ores origin_ores_msg_;

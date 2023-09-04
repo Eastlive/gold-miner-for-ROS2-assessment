@@ -36,6 +36,12 @@ void MineServiceNode::mine_service(
   const std::shared_ptr<miner_interfaces::srv::MineMap::Request> request,
   const std::shared_ptr<miner_interfaces::srv::MineMap::Response> response)
 {
+  if (request->id == -1) {
+    RCLCPP_INFO(this->get_logger(), "Initial Mine Map.");
+    response->ores = ores_msg_;
+    return;
+  }
+
   if (ores_msg_.ores.size() == 0) {
     RCLCPP_INFO(this->get_logger(), "No ores");
     response->ores = ores_msg_;
